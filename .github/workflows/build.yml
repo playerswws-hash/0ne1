@@ -1,0 +1,32 @@
+name: Build tweak
+
+on:
+  workflow_dispatch:
+  push:
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: brew install ldid dpkg
+
+      - name: Install Theos
+        run: |
+          git clone --recursive https://github.com/theos/theos.git "$HOME/theos"
+          echo "THEOS=$HOME/theos" >> "$GITHUB_ENV"
+
+      - name: Unpack project
+        run: unzip -q AniTimeLite.zip
+
+      - name: Build
+        working-directory: AniTimeLite
+        run: make package
+
+      - name: Upload deb
+        uses: actions/upload-artifact@v4
+        with:
+          name: AniTimeLite-deb
+          path: AniTimeLite/packages/*.deb
